@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<!-- Fragmento #1 Agregar -->
+<section th:fragment="agregar">
+    <!-- Botón -->
+    <div class="row py-4 mb-2 bg-light">
+        <div class="col-md-1"></div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-success"
+                    data-bs-toggle="modal" data-bs-target="#agregarArbolModal">
+                <i class="fa-solid fa-tree"></i> [[#{arbol.agregar}]]
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="agregarArbolModal" tabindex="-1"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h1 class="modal-title fs-5">
+                        <i class="fa-solid fa-tree"></i> [[#{arbol.agregar}]]
+                    </h1>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <form th:action="@{/arbol/guardar}"
+                      th:object="${arbol}"
+                      class="was-validated"
+                      enctype="multipart/form-data"
+                      method="post">
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+                            <label>[[#{arbol.nombreComun}]]</label>
+                            <input type="text" th:field="*{nombreComun}"
+                                   class="form-control"
+                                   maxlength="100" required/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>[[#{arbol.tipoFlor}]]</label>
+                            <input type="text" th:field="*{tipoFlor}"
+                                   class="form-control"
+                                   maxlength="100"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>[[#{arbol.durezaMadera}]]</label>
+                            <input type="number" th:field="*{durezaMadera}"
+                                   class="form-control" min="0"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>[[#{arbol.alturaPromedio}]]</label>
+                            <input type="number" step="0.01"
+                                   th:field="*{alturaPromedio}"
+                                   class="form-control"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>[[#{arbol.imagen}]]</label>
+                            <input type="file" name="imagenFile"
+                                   class="form-control"
+                                   onchange="mostrarImagen(this);"/>
+                            <img id="blah" src="#" alt="imagen del árbol"
+                                 height="200"/>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- fragmento listado de árboles -->
+<section th:fragment="listado" class="p-3">
+    <div class="row p-3">
+        <div class="col-md-9">
+            <div class="card p-2">
+                <div class="card-header">
+                    <h4>[[#{arbol.listado}]]</h4>
+                </div>
+
+                <div class="card-body">
+                    <div th:if="${arboles != null and !arboles.empty}">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>[[#{arbol.nombreComun}]]</th>
+                                    <th>[[#{arbol.tipoFlor}]]</th>
+                                    <th>[[#{arbol.durezaMadera}]]</th>
+                                    <th>[[#{arbol.alturaPromedio}]]</th>
+                                    <th>[[#{arbol.imagen}]]</th>
+                                    <th sec:authorize="hasRole('ROLE_ADMIN')"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr th:each="a : ${arboles}">
+                                    <td>[[${a.idArbol}]]</td>
+                                    <td>[[${a.nombreComun}]]</td>
+                                    <td>[[${a.tipoFlor}]]</td>
+                                    <td class="text-center">[[${a.durezaMadera}]]</td>
+                                    <td class="text-center">[[${a.alturaPromedio}]] m</td>
+                                    <td>
+                                        <img th:src="${a.rutaImagen}"
+                                             alt="noData" height="75" width="75"/>
+                                    </td>
+
+                                    <td sec:authorize="hasRole('ROLE_ADMIN')">
+                                        <button type="button" class="btn btn-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#confirmModal"
+                                                th:data-bs-id="${a.idArbol}"
+                                                th:data-bs-descripcion="${a.nombreComun}">
+                                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                                        </button>
+
+                                        <a th:href="@{/arbol/modificar/}+${a.idArbol}"
+                                           class="btn btn-warning">
+                                            <i class="fas fa-pencil-alt"></i> [[#{accion.actualizar}]]
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-center p-2"
+                         th:if="${arboles == null or arboles.empty}">
+                        <span>[[#{lista.vacia}]]</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta lateral -->
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white mb-3">
+                <div class="card-body">
+                    <h3>[[#{arbol.total}]]</h3>
+                    <h4 class="fs-2">
+                        <i class="fa-solid fa-tree"></i> [[${totalArboles}]]
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fragmento para editar un árbol -->
+<section th:fragment="editar">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+
+            <form method="POST"
+                  th:action="@{/arbol/guardar}"
+                  th:object="${arbol}"
+                  class="was-validated"
+                  enctype="multipart/form-data">
+
+                <!-- Campos ocultos -->
+                <input type="hidden" th:field="*{idArbol}"/>
+                <input type="hidden" th:field="*{rutaImagen}"/>
+
+                <!-- Botones superiores -->
+                <div class="row py-4 mb-4 bg-light">
+                    <div class="col-md-4 d-grid">
+                        <a th:href="@{/arbol/listado}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> [[#{accion.regresar}]]
+                        </a>
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Formulario -->
+                <div class="row">
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>[[#{accion.actualizar}]]</h4>
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="mb-3">
+                                    <label>[[#{arbol.nombreComun}]]</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           th:field="*{nombreComun}"
+                                           maxlength="100"
+                                           required/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>[[#{arbol.tipoFlor}]]</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           th:field="*{tipoFlor}"
+                                           maxlength="100"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>[[#{arbol.durezaMadera}]]</label>
+                                    <input type="number"
+                                           class="form-control"
+                                           th:field="*{durezaMadera}"
+                                           min="0"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>[[#{arbol.alturaPromedio}]]</label>
+                                    <input type="number"
+                                           step="0.01"
+                                           class="form-control"
+                                           th:field="*{alturaPromedio}"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>[[#{arbol.imagen}]]</label>
+                                    <input class="form-control"
+                                           type="file"
+                                           name="imagenFile"
+                                           onchange="mostrarImagen(this);"/>
+                                    <img id="blah"
+                                         th:src="@{${arbol.rutaImagen}}"
+                                         alt="imagen del árbol"
+                                         height="200"/>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Fragmento para confirmar eliminación de un árbol -->
+<section th:fragment="confirmarEliminar">
+    <div class="modal fade"
+         id="confirmModal"
+         tabindex="-1"
+         aria-labelledby="modalLabel"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered custom-modal-animation">
+            <div class="modal-content animate-slide-up">
+
+                <form th:action="@{/arbol/eliminar}" method="post">
+                    <input type="hidden" name="idArbol" id="modalId"/>
+
+                    <div class="modal-header bg-warning text-white">
+                        <h5 class="modal-title" id="modalLabel">
+                            <i class="fa-solid fa-circle-radiation"></i> [[#{accion.confirmar}]]
+                        </h5>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>
+                            [[#{accion.confirmar.texto1}]]
+                            <strong><span id="modalDescripcion"></span></strong>?
+                        </p>
+                        <h6>[[#{accion.confirmar.texto2}]]</h6>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                        </button>
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
